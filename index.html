@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>RIZQI O - Chatbot & Generator Gambar Canggih</title>
+    <style>
+        :root {
+            --primary-color: #4a6bff;
+            --secondary-color: #6c5ce7;
+            --dark-color: #2d3436;
+            --light-color: #f5f6fa;
+            --success-color: #00b894;
+            --warning-color: #fdcb6e;
+            --danger-color: #d63031;
+            --bg-color: #e0e5ec;
+            --text-color: #2d3436;
+            --panel-bg: #e0e5ec;
+            --shadow-light: #ffffff;
+            --shadow-dark: #a3b1c6;
+        }
+        
+        .dark-mode {
+            --bg-color: #1a1a1a;
+            --text-color: #f5f6fa;
+            --panel-bg: #2d3436;
+            --shadow-light: #3d4346;
+            --shadow-dark: #1e2224;
+            --dark-color: #f5f6fa;
+            --light-color: #2d3436;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 15px;
+            width: 100%;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 15px 0;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-radius: 15px;
+            box-shadow: 8px 8px 15px var(--shadow-dark), 
+                        -8px -8px 15px var(--shadow-light);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        h1 {
+            font-size: clamp(1.8rem, 5vw, 2.5rem);
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        .tagline {
+            font-size: clamp(0.9rem, 3vw, 1.2rem);
+            opacity: 0.9;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .panel {
+            background-color: var(--panel-bg);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 8px 8px 15px var(--shadow-dark), 
+                       -8px -8px 15px var(--shadow-light);
+            height: auto;
+            min-height: 500px;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        
+        .panel-title {
+            font-size: clamp(1.2rem, 4vw, 1.5rem);
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+        
+        .panel-controls {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .panel-controls button {
+            background: var(--panel-bg);
+            color: var(--primary-color);
+            border: none;
+            padding: 6px 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            box-shadow: 5px 5px 10px var(--shadow-dark), 
+                        -5px -5px 10px var(--shadow-light);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .panel-controls button:hover {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        
+        .panel-controls button:active {
+            box-shadow: inset 3px 3px 5px rgba(0, 0, 0, 0.3);
+        }
+        
+        .panel-controls button svg {
+            width: 16px;
+            height: 16px;
+        }
+        
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: var(--panel-bg);
+            border-radius: 15px;
+            box-shadow: inset 3px 3px 5px var(--shadow-dark), 
+                       inset -3px -3px 5px var(--shadow-light);
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .message {
+            margin-bottom: 10px;
+            padding: 10px 15px;
+            border-radius: 18px;
+            max-width: 85%;
+            word-wrap: break-word;
+            font-size: clamp(0.9rem, 3.5vw, 1rem);
+            line-height: 1.4;
+            box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .user-message {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 5px;
+        }
+        
+        .bot-message {
+            background-color: var(--panel-bg);
+            margin-right: auto;
+            border-bottom-left-radius: 5px;
+            box-shadow: 3px 3px 5px var(--shadow-dark), 
+                       -3px -3px 5px var(--shadow-light);
+        }
+        
+        .chat-input {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .chat-input input {
+            flex: 1;
+            padding: 12px 18px;
+            background: var(--panel-bg);
+            border: none;
+            border-radius: 20px;
+            outline: none;
+            font-size: clamp(0.9rem, 4vw, 1rem);
+            min-height: 45px;
+            color: var(--text-color);
+            box-shadow: inset 3px 3px 5px var(--shadow-dark), 
+                       inset -3px -3px 5px var(--shadow-light);
+        }
+        
+        .chat-input button {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 12px 18px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: clamp(0.9rem, 4vw, 1rem);
+            transition: all 0.3s ease;
+            min-height: 45px;
+            min-width: 80px;
+            box-shadow: 5px 5px 10px var(--shadow-dark);
+        }
+        
+        .chat-input button:hover {
+            opacity: 0.9;
+        }
+        
+        .chat-input button:active {
+            box-shadow: inset 3px 3px 5px rgba(0, 0, 0, 0.3);
+        }
+        
+        .image-display {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: var(--panel-bg);
+            border-radius: 15px;
+            margin-bottom: 15px;
+            overflow: hidden;
+            min-height: 250px;
+            max-height: 40vh;
+            position: relative;
+            box-shadow: inset 3px 3px 5px var(--shadow-dark), 
+                       inset -3px -3px 5px var(--shadow-light);
+        }
+        
+        .image-display img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            border-radius: 10px;
+            box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.2);
+        }
+        
+        .image-controls {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 10px;
+        }
+        
+        .image-controls input {
+            padding: 12px 18px;
+            background: var(--panel-bg);
+            border: none;
+            border-radius: 20px;
+            outline: none;
+            font-size: clamp(0.9rem, 4vw, 1rem);
+            min-height: 45px;
+            color: var(--text-color);
+            box-shadow: inset 3px 3px 5px var(--shadow-dark), 
+                       inset -3px -3px 5px var(--shadow-light);
+        }
+        
+        .image-controls button {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 12px 18px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: clamp(0.9rem, 4vw, 1rem);
+            transition: all 0.3s ease;
+            min-width: 110px;
+            box-shadow: 5px 5px 10px var(--shadow-dark);
+        }
+        
+        .image-controls button:hover {
+            opacity: 0.9;
+        }
+        
+        .image-controls button:active {
+            box-shadow: inset 3px 3px 5px rgba(0, 0, 0, 0.3);
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .image-settings {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        
+        .aspect-ratio-selector, .model-selector {
+            flex: 1;
+        }
+        
+        .aspect-ratio-selector select, .model-selector select {
+            width: 100%;
+            padding: 10px 15px;
+            background: var(--panel-bg);
+            border: none;
+            border-radius: 20px;
+            outline: none;
+            font-size: clamp(0.8rem, 3.5vw, 0.9rem);
+            min-height: 45px;
+            color: var(--text-color);
+            box-shadow: inset 3px 3px 5px var(--shadow-dark), 
+                       inset -3px -3px 5px var(--shadow-light);
+        }
+        
+        .download-btn {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .download-btn:hover {
+            opacity: 0.9;
+        }
+        
+        .download-btn:active {
+            box-shadow: inset 2px 2px 3px rgba(0, 0, 0, 0.3);
+        }
+        
+        .download-btn svg {
+            width: 16px;
+            height: 16px;
+        }
+        
+        .tab-container {
+            display: flex;
+            margin-bottom: 15px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        
+        .tab {
+            padding: 10px 18px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+            font-size: clamp(0.9rem, 4vw, 1rem);
+            white-space: nowrap;
+            color: var(--text-color);
+        }
+        
+        .tab.active {
+            border-bottom: 2px solid var(--primary-color);
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+        
+        .tab-content {
+            display: none;
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .tab-content.active {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .settings-panel {
+            padding: 15px;
+            background-color: var(--panel-bg);
+            border-radius: 15px;
+            margin-top: 10px;
+            overflow-y: auto;
+            box-shadow: inset 3px 3px 5px var(--shadow-dark), 
+                       inset -3px -3px 5px var(--shadow-light);
+        }
+        
+        .settings-group {
+            margin-bottom: 15px;
+        }
+        
+        .settings-group h4 {
+            margin-bottom: 8px;
+            color: var(--text-color);
+            font-size: clamp(0.9rem, 4vw, 1rem);
+        }
+        
+        .settings-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: clamp(0.8rem, 3.5vw, 0.9rem);
+            color: var(--text-color);
+        }
+        
+        .settings-group input, .settings-group select {
+            width: 100%;
+            padding: 10px 15px;
+            background: var(--panel-bg);
+            border: none;
+            border-radius: 10px;
+            font-size: clamp(0.8rem, 3.5vw, 0.9rem);
+            min-height: 45px;
+            color: var(--text-color);
+            box-shadow: inset 3px 3px 5px var(--shadow-dark), 
+                       inset -3px -3px 5px var(--shadow-light);
+        }
+        
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 12px 20px;
+            border-radius: 10px;
+            box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+        
+        .notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        /* Mobile-specific adjustments */
+        @media (max-width: 480px) {
+            .container {
+                padding: 10px;
+            }
+            
+            header {
+                padding: 12px 0;
+                margin-bottom: 15px;
+            }
+            
+            .panel {
+                padding: 15px;
+                min-height: 400px;
+            }
+            
+            .message {
+                max-width: 90%;
+                padding: 8px 12px;
+            }
+            
+            .chat-input, .image-controls {
+                gap: 8px;
+            }
+            
+            .chat-input input, .image-controls input {
+                padding: 10px 15px;
+            }
+            
+            .chat-input button, .image-controls button {
+                padding: 10px 15px;
+                min-width: 70px;
+            }
+            
+            .tab {
+                padding: 8px 12px;
+            }
+            
+            .image-settings {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .panel-controls {
+                gap: 6px;
+            }
+            
+            .panel-controls button {
+                padding: 5px 8px;
+                font-size: 0.7rem;
+            }
+            
+            .notification {
+                bottom: 15px;
+                right: 15px;
+                padding: 10px 15px;
+                font-size: 0.9rem;
+            }
+        }
+
+        /* Prevent zoom on input focus on mobile */
+        @media screen and (max-width: 767px) {
+            input, select, textarea {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>RIZQI O</h1>
+            <p class="tagline">Chatbot & Generator Gambar Canggih</p>
+        </header>
+        
+        <div class="main-content">
+            <div class="panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">Chatbot AI</h2>
+                    <div class="panel-controls">
+                        <button id="clear-chat">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M3 6h18"></path>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                            </svg>
+                            Bersihkan
+                        </button>
+                        <button id="theme-toggle">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="5"></circle>
+                                <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="tab-container">
+                    <div class="tab active" data-tab="chat">Chat</div>
+                    <div class="tab" data-tab="settings">Pengaturan</div>
+                </div>
+                
+                <div class="tab-content active" id="chat-tab">
+                    <div class="chat-container" id="chat-container">
+                        <div class="message bot-message">
+                            Halo! Saya RIZQI O, asisten AI Anda. Bagaimana saya bisa membantu Anda hari ini?
+                        </div>
+                    </div>
+                    
+                    <div class="chat-input">
+                        <input type="text" id="user-input" placeholder="Ketik pesan Anda..." autocomplete="off">
+                        <button id="send-button">Kirim</button>
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="settings-tab">
+                    <div class="settings-panel">
+                        <div class="settings-group">
+                            <h4>Model AI</h4>
+                            <select id="text-model">
+                                <option value="default">Default (Pollinations Text AI)</option>
+                                <option value="gpt-3.5">GPT-3.5 (OpenAI)</option>
+                                <option value="gpt-4">GPT-4 (OpenAI)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="settings-group">
+                            <h4>Gaya Respons</h4>
+                            <select id="response-style">
+                                <option value="default">Default</option>
+                                <option value="formal">Formal</option>
+                                <option value="casual">Kasual</option>
+                                <option value="technical">Teknis</option>
+                                <option value="creative">Kreatif</option>
+                            </select>
+                        </div>
+                        
+                        <div class="settings-group">
+                            <h4>Bahasa</h4>
+                            <select id="language">
+                                <option value="id">Bahasa Indonesia</option>
+                                <option value="en">English</option>
+                                <option value="ja">日本語</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">Generator Gambar AI</h2>
+                    <div class="panel-controls">
+                        <button id="random-prompt">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                                <path d="M3.27 6.96L12 12.01l8.73-5.05"></path>
+                                <path d="M12 22.08V12"></path>
+                            </svg>
+                            Acak
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="image-display" id="image-display">
+                    <p>Gambar akan muncul di sini</p>
+                </div>
+                
+                <div class="image-settings">
+                    <div class="aspect-ratio-selector">
+                        <select id="aspect-ratio">
+                            <option value="1:1">Aspect Ratio 1:1</option>
+                            <option value="9:16">Aspect Ratio 9:16</option>
+                            <option value="16:9">Aspect Ratio 16:9</option>
+                        </select>
+                    </div>
+                    
+                    <div class="model-selector">
+                        <select id="image-model">
+                            <option value="default">Default Model</option>
+                            <option value="stable-diffusion">Stable Diffusion</option>
+                            <option value="dall-e">DALL-E</option>
+                            <option value="midjourney">MidJourney</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="image-controls">
+                    <input type="text" id="image-prompt" placeholder="Deskripsi gambar yang ingin dibuat..." autocomplete="off">
+                    <div style="display: flex; gap: 8px;">
+                        <button id="download-btn" style="display: none;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="7 10 12 15 17 10"></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                            Download
+                        </button>
+                        <button id="generate-button">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                                <path d="M3.27 6.96L12 12.01l8.73-5.05"></path>
+                                <path d="M12 22.08V12"></path>
+                            </svg>
+                            Generate
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="notification" id="notification"></div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Theme toggle functionality
+            const themeToggle = document.getElementById('theme-toggle');
+            const body = document.body;
+            
+            // Check for saved theme preference or use preferred color scheme
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            
+            if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+                body.classList.add('dark-mode');
+                themeToggle.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>';
+            }
+            
+            themeToggle.addEventListener('click', function() {
+                body.classList.toggle('dark-mode');
+                
+                if (body.classList.contains('dark-mode')) {
+                    localStorage.setItem('theme', 'dark');
+                    themeToggle.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>';
+                } else {
+                    localStorage.setItem('theme', 'light');
+                    themeToggle.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path></svg>';
+                }
+            });
+            
+            // Notification function
+            function showNotification(message) {
+                const notification = document.getElementById('notification');
+                notification.textContent = message;
+                notification.classList.add('show');
+                
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3000);
+            }
+            
+            // Tab functionality
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // Remove active class from all tabs and contents
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    
+                    // Add active class to clicked tab and corresponding content
+                    this.classList.add('active');
+                    const tabId = this.getAttribute('data-tab');
+                    document.getElementById(`${tabId}-tab`).classList.add('active');
+                });
+            });
+            
+            // Chat functionality
+            const chatContainer = document.getElementById('chat-container');
+            const userInput = document.getElementById('user-input');
+            const sendButton = document.getElementById('send-button');
+            const clearChatButton = document.getElementById('clear-chat');
+            
+            function addMessage(text, isUser) {
+                const messageDiv = document.createElement('div');
+                messageDiv.classList.add('message');
+                messageDiv.classList.add(isUser ? 'user-message' : 'bot-message');
+                messageDiv.textContent = text;
+                chatContainer.appendChild(messageDiv);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+            
+            async function sendMessage() {
+                const message = userInput.value.trim();
+                if (!message) return;
+                
+                addMessage(message, true);
+                userInput.value = '';
+                
+                // Show loading indicator
+                const loadingDiv = document.createElement('div');
+                loadingDiv.classList.add('message', 'bot-message');
+                loadingDiv.innerHTML = '<div class="loading"></div>';
+                chatContainer.appendChild(loadingDiv);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+                
+                try {
+                    // Get selected model
+                    const model = document.getElementById('text-model').value;
+                    let response;
+                    
+                    if (model === 'default') {
+                        // Use Pollinations.AI text generation
+                        const encodedPrompt = encodeURIComponent(message);
+                        const apiUrl = `https://text.pollinations.ai/${encodedPrompt}`;
+                        
+                        const res = await fetch(apiUrl);
+                        response = await res.text();
+                    } else {
+                        // For demo purposes, simulate GPT response
+                        // In a real app, you would call the OpenAI API
+                        response = `Saya adalah simulasi respons dari ${model}. Pertanyaan Anda: "${message}". Maaf, ini hanya demonstrasi antarmuka. Untuk implementasi nyata, Anda perlu mengintegrasikan dengan API OpenAI yang sesungguhnya.`;
+                    }
+                    
+                    // Remove loading indicator
+                    chatContainer.removeChild(loadingDiv);
+                    
+                    // Add bot response
+                    addMessage(response, false);
+                } catch (error) {
+                    console.error('Error:', error);
+                    chatContainer.removeChild(loadingDiv);
+                    addMessage('Maaf, terjadi kesalahan saat memproses permintaan Anda.', false);
+                }
+            }
+            
+            sendButton.addEventListener('click', sendMessage);
+            userInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') sendMessage();
+            });
+            
+            clearChatButton.addEventListener('click', function() {
+                chatContainer.innerHTML = '<div class="message bot-message">Halo! Saya RIZQI O, asisten AI Anda. Bagaimana saya bisa membantu Anda hari ini?</div>';
+            });
+            
+            // Image generation functionality
+            const imageDisplay = document.getElementById('image-display');
+            const imagePrompt = document.getElementById('image-prompt');
+            const generateButton = document.getElementById('generate-button');
+            const randomPromptButton = document.getElementById('random-prompt');
+            const imageModel = document.getElementById('image-model');
+            const aspectRatio = document.getElementById('aspect-ratio');
+            const downloadBtn = document.getElementById('download-btn');
+            let currentImageUrl = '';
+            
+            const randomPrompts = [
+                "Pemandangan kota futuristik dengan langit senja yang dramatis",
+                "Kucing astronaut bermain piano di ruang angkasa",
+                "Istana kristal terapung di atas awan, gaya seni digital",
+                "Dragon cyberpunk bertengger di atas gedung pencakar langit",
+                "Potret detil wajah robot dengan ekspresi manusiawi",
+                "Hutan ajaib dengan pohon bercahaya di malam hari",
+                "Kapal layar antariksa menjelajahi nebula berwarna-warni",
+                "Konsep seni karakter game dengan armor futuristic",
+                "Pemandangan bawah laut dengan kota Atlantis yang megah",
+                "Mekanisme jam fantasi dengan detail steampunk"
+            ];
+            
+            randomPromptButton.addEventListener('click', function() {
+                const randomIndex = Math.floor(Math.random() * randomPrompts.length);
+                imagePrompt.value = randomPrompts[randomIndex];
+            });
+            
+            // Function to download image
+            downloadBtn.addEventListener('click', function() {
+                if (!currentImageUrl) return;
+                
+                fetch(currentImageUrl)
+                    .then(response => response.blob())
+                    .then(blob => {
+                        const url = window.URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        link.href = url;
+                        const promptText = imagePrompt.value.trim().substring(0, 30).replace(/[^a-z0-9]/gi, '_').toLowerCase();
+                        link.download = `rizqio_${promptText || 'image'}.jpg`;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        
+                        // Show success notification
+                        showNotification('Gambar berhasil didownload!');
+                    })
+                    .catch(error => {
+                        console.error('Download error:', error);
+                        showNotification('Gagal mendownload gambar');
+                    });
+            });
+            
+            generateButton.addEventListener('click', async function() {
+                const prompt = imagePrompt.value.trim();
+                if (!prompt) return;
+                
+                // Show loading state
+                imageDisplay.innerHTML = '<div class="loading" style="width: 50px; height: 50px;"></div>';
+                generateButton.disabled = true;
+                generateButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><path d="M3.27 6.96L12 12.01l8.73-5.05"></path><path d="M12 22.08V12"></path></svg> Generating...';
+                downloadBtn.style.display = 'none';
+                
+                try {
+                    // Get selected model and aspect ratio
+                    const model = imageModel.value;
+                    const ratio = aspectRatio.value;
+                    
+                    // Map aspect ratio to width and height parameters
+                    let width, height;
+                    switch(ratio) {
+                        case '1:1':
+                            width = 1024;
+                            height = 1024;
+                            break;
+                        case '9:16':
+                            width = 576;
+                            height = 1024;
+                            break;
+                        case '16:9':
+                            width = 1024;
+                            height = 576;
+                            break;
+                        default:
+                            width = 1024;
+                            height = 1024;
+                    }
+                    
+                    // Use Pollinations.AI image generation with nologo parameter
+                    const encodedPrompt = encodeURIComponent(prompt);
+                    let apiUrl;
+                    
+                    if (model === 'default') {
+                        apiUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&nologo=true`;
+                    } else {
+                        apiUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?model=${model}&width=${width}&height=${height}&nologo=true`;
+                    }
+                    
+                    // Create image element
+                    const img = document.createElement('img');
+                    img.src = apiUrl;
+                    img.alt = prompt;
+                    img.onload = function() {
+                        imageDisplay.innerHTML = '';
+                        imageDisplay.appendChild(img);
+                        currentImageUrl = apiUrl;
+                        downloadBtn.style.display = 'flex';
+                        generateButton.disabled = false;
+                        generateButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><path d="M3.27 6.96L12 12.01l8.73-5.05"></path><path d="M12 22.08V12"></path></svg> Generate';
+                        
+                        // Show success notification
+                        showNotification('Gambar berhasil dibuat!');
+                    };
+                    
+                    img.onerror = function() {
+                        imageDisplay.innerHTML = '<p>Gagal menghasilkan gambar. Silakan coba lagi.</p>';
+                        generateButton.disabled = false;
+                        generateButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><path d="M3.27 6.96L12 12.01l8.73-5.05"></path><path d="M12 22.08V12"></path></svg> Generate';
+                        showNotification('Gagal membuat gambar');
+                    };
+                } catch (error) {
+                    console.error('Error:', error);
+                    imageDisplay.innerHTML = '<p>Terjadi kesalahan saat menghasilkan gambar.</p>';
+                    generateButton.disabled = false;
+                    generateButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><path d="M3.27 6.96L12 12.01l8.73-5.05"></path><path d="M12 22.08V12"></path></svg> Generate';
+                    showNotification('Error membuat gambar');
+                }
+            });
+            
+            // Allow pressing Enter in image prompt to generate
+            imagePrompt.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') generateButton.click();
+            });
+
+            // Handle virtual keyboard on mobile
+            if ('visualViewport' in window) {
+                const visualViewport = window.visualViewport;
+                visualViewport.addEventListener('resize', function() {
+                    // Scroll to bottom when keyboard appears
+                    if (visualViewport.height < window.innerHeight * 0.7) {
+                        setTimeout(() => {
+                            window.scrollTo(0, document.body.scrollHeight);
+                        }, 100);
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
